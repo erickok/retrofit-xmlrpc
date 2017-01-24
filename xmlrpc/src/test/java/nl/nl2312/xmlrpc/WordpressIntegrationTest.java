@@ -16,9 +16,9 @@ import static com.google.common.truth.Truth.assertThat;
 
 public final class WordpressIntegrationTest {
 
-    private static final String URL = "http://nils.ekok.nl/";
-    private static final String USERNAME = "admin";
-    private static final String PASSWORD = "Clio172Clio172";
+    private static final String URL = "";
+    private static final String USERNAME = "";
+    private static final String PASSWORD = "";
 
     private Retrofit retrofit;
 

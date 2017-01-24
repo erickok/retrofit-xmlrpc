@@ -35,12 +35,21 @@ public final class SimpleIntegrationTest {
     }
 
     @Test
-    public void sumprod() throws IOException {
+    public void sumprodArray() throws IOException {
         SimpleTestService service = retrofit.create(SimpleTestService.class);
-        int[] execute = service.sumprod(new SumProdArgs(2, 4)).execute().body();
+        int[] execute = service.sumprodArray(new SumProdArgs(2, 4)).execute().body();
         assertThat(execute).isNotEmpty();
         assertThat(execute[0]).isEqualTo(6);
         assertThat(execute[1]).isEqualTo(8);
+    }
+
+    @Test
+    public void sumprod() throws IOException {
+        SimpleTestService service = retrofit.create(SimpleTestService.class);
+        SumProdResponse execute = service.sumprod(new SumProdArgs(2, 4)).execute().body();
+        assertThat(execute).isNotNull();
+        assertThat(execute.sum).isEqualTo(6);
+        assertThat(execute.product).isEqualTo(8);
     }
 
     @Test
@@ -60,7 +69,11 @@ public final class SimpleIntegrationTest {
 
         @XmlRpc("test.sumprod")
         @POST("XMLRPC")
-        Call<int[]> sumprod(@Body SumProdArgs args);
+        Call<int[]> sumprodArray(@Body SumProdArgs args);
+
+        @XmlRpc("test.sumprod")
+        @POST("XMLRPC")
+        Call<SumProdResponse> sumprod(@Body SumProdArgs args);
 
         @XmlRpc("test.capitalize")
         @POST("http://www.advogato.org/XMLRPC")
@@ -81,6 +94,13 @@ public final class SimpleIntegrationTest {
             this.a = a;
             this.b = b;
         }
+
+    }
+
+    public static final class SumProdResponse {
+
+        public int sum;
+        public int product;
 
     }
 

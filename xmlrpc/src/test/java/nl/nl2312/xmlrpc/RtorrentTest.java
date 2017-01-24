@@ -15,9 +15,9 @@ import static com.google.common.truth.Truth.assertThat;
 
 public final class RtorrentTest {
 
-    private static final String URL = "https://frdedi2tb008.xirvik.com/";
-    private static final String USERNAME = "eric";
-    private static final String PASSWORD = "development";
+    private static final String URL = "";
+    private static final String USERNAME = "";
+    private static final String PASSWORD = "";
 
     private Retrofit retrofit;
 
