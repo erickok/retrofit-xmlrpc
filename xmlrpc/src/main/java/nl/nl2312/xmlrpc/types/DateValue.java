@@ -18,7 +18,7 @@ public final class DateValue implements Value {
     private static final DateFormat SIMPLE_ISO8601 = new Iso8601DateFormat();
 
     @Element(name = CODE)
-    public Date value;
+    Date value;
 
     public DateValue(Date from) {
         this.value = from;

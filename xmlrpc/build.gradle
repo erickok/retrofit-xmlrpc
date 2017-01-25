@@ -1,7 +1,11 @@
-group 'nl.2312'
-version '0.0-SNAPSHOT'
+plugins {
+    id "com.jfrog.bintray" version "1.7"
+}
 
 apply plugin: 'java'
+
+group = 'nl.2312'
+version = '0.0'
 
 sourceCompatibility = 1.7
 
@@ -17,4 +21,28 @@ dependencies {
     testCompile 'com.squareup.okhttp3:logging-interceptor:3.5.0'
     testCompile 'junit:junit:4.12'
     testCompile 'com.google.truth:truth:0.31'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+Properties properties = new Properties()
+File propFile = '/Users/erickok/.gradle/bintray.properties' as File
+properties.load(propFile.newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+    configurations = ['archives']
+    pkg {
+        repo = 'retrofit-xmlrpc'
+        name = 'retrofit-xmlrpc'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/erickok/retrofit-xmlrpc.git'
+        version {
+            name = '0.0'
+        }
+    }
 }

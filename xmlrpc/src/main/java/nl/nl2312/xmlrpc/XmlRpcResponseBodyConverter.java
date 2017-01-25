@@ -1,6 +1,5 @@
 package nl.nl2312.xmlrpc;
 
-import nl.nl2312.xmlrpc.types.Value;
 import okhttp3.ResponseBody;
 import org.simpleframework.xml.Serializer;
 import retrofit2.Converter;

@@ -6,6 +6,7 @@ import org.simpleframework.xml.stream.OutputNode;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public final class ArrayValue implements Value {
     }
 
     @ElementList
-    public List<Value> data;
+    List<Value> data;
 
     @Override
     public List<Value> value() {
@@ -45,31 +46,31 @@ public final class ArrayValue implements Value {
             if (componentType.equals(Boolean.TYPE)) {
                 boolean[] values = new boolean[data.size()];
                 for (int i = 0; i < data.size(); i++) {
-                    values[i] = ((BooleanValue) data.get(i)).value;
+                    values[i] = ((BooleanValue) data.get(i)).value();
                 }
                 return values;
             } else if (componentType.equals(Integer.TYPE)) {
                 int[] values = new int[data.size()];
                 for (int i = 0; i < data.size(); i++) {
-                    values[i] = ((IntegerValue) data.get(i)).value;
+                    values[i] = ((IntegerValue) data.get(i)).value();
                 }
                 return values;
             } else if (componentType.equals(Long.TYPE)) {
                 long[] values = new long[data.size()];
                 for (int i = 0; i < data.size(); i++) {
-                    values[i] = ((LongValue) data.get(i)).value;
+                    values[i] = ((LongValue) data.get(i)).value();
                 }
                 return values;
             } else if (componentType.equals(Double.TYPE)) {
                 double[] values = new double[data.size()];
                 for (int i = 0; i < data.size(); i++) {
-                    values[i] = ((DoubleValue) data.get(i)).value;
+                    values[i] = ((DoubleValue) data.get(i)).value();
                 }
                 return values;
             } else if (componentType.equals(String.class)) {
                 String[] values = new String[data.size()];
                 for (int i = 0; i < data.size(); i++) {
-                    values[i] = ((StringValue) data.get(i)).value;
+                    values[i] = ((StringValue) data.get(i)).value();
                 }
                 return values;
             } else if (data.size() > 0 && data.get(0) instanceof StructValue) {
@@ -95,14 +96,20 @@ public final class ArrayValue implements Value {
             return list;
         } else {
             Field[] fields = type.getFields();
-            if (data.size() != fields.length) {
+            List<Field> targetFields = new ArrayList<>(fields.length);
+            for (Field field : fields) {
+                if (!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
+                    targetFields.add(field);
+                }
+            }
+            if (data.size() != targetFields.size()) {
                 throw new RuntimeException("Tried to load array with " + data.size() + " elements into type " + type
-                        .getSimpleName() + " with " + fields.length + " fields");
+                        .getSimpleName() + " with " + targetFields.size() + " fields");
             }
             Object t = type.newInstance();
-            for (int i = 0; i < fields.length; i++) {
-                Field field = fields[i];
-                field.set(t, data.get(i).asObject(field.getType()));
+            for (int i = 0; i < targetFields.size(); i++) {
+                Field targetField = targetFields.get(i);
+                targetField.set(t, data.get(i).asObject(targetField.getType()));
             }
             return t;
         }

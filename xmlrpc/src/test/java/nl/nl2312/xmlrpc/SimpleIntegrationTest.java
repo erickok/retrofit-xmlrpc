@@ -12,6 +12,7 @@ import retrofit2.http.POST;
 import java.io.IOException;
 
 import static com.google.common.truth.Truth.assertThat;
+import static nl.nl2312.xmlrpc.Nothing.NOTHING;
 
 public final class SimpleIntegrationTest {
 
@@ -62,7 +63,7 @@ public final class SimpleIntegrationTest {
     @Test(expected = IOException.class)
     public void fault() throws IOException {
         SimpleTestService service = retrofit.create(SimpleTestService.class);
-        service.nonExistentMethod().execute().body();
+        service.nonExistentMethod(NOTHING).execute().body();
     }
 
     interface SimpleTestService {
@@ -81,7 +82,7 @@ public final class SimpleIntegrationTest {
 
         @XmlRpc("non.existent.method")
         @POST("XMLRPC")
-        Call<String> nonExistentMethod(@Body Object... nothing);
+        Call<String> nonExistentMethod(@Body Nothing nothing);
 
     }
 

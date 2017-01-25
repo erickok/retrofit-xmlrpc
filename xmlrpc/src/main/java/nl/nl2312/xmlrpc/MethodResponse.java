@@ -6,8 +6,9 @@ import org.simpleframework.xml.Root;
 import java.util.List;
 
 @Root(name = "methodResponse")
-public final class MethodResponse {
+final class MethodResponse {
 
-	@ElementList public List<Param> params;
+    @ElementList
+    List<Param> params;
 
 }

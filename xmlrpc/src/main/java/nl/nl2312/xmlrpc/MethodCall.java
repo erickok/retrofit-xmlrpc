@@ -6,18 +6,20 @@ import org.simpleframework.xml.Root;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 @Root(name = "methodCall")
-public final class MethodCall {
+final class MethodCall {
 
     @Element
-    public String methodName;
+    String methodName;
+
     @ElementList
-    public List<Param> params;
+    List<Param> params;
 
     public static MethodCall create(String method, Object params) {
         MethodCall methodCall = new MethodCall();
@@ -45,6 +47,9 @@ public final class MethodCall {
             Field[] fields = params.getClass().getDeclaredFields();
             methodCall.params = new ArrayList<>(fields.length);
             for (Field field : fields) {
+                if (Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
                 try {
                     methodCall.params.add(Param.from(field.get(params)));
                 } catch (IllegalAccessException e) {

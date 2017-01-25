@@ -10,7 +10,7 @@ public final class Param {
 
     @Element(name = Value.CODE)
     @Convert(ValueConverter.class)
-    public Value value;
+    Value value;
 
     public static Param from(Object from) {
         Param param = new Param();

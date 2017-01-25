@@ -14,7 +14,7 @@ public final class BooleanValue implements Value {
     public static final String TRUE = "1";
 
     @Element(name = CODE)
-    public boolean value;
+    boolean value;
 
     public BooleanValue(Boolean from) {
         this.value = from;

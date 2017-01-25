@@ -12,7 +12,7 @@ public final class LongValue implements Value {
     public static final String CODE = "i8";
 
     @Element(name = CODE)
-    public long value;
+    long value;
 
     public LongValue(Long from) {
         this.value = from;

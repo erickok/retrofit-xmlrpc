@@ -10,7 +10,7 @@ public final class DoubleValue implements Value {
     public static final String CODE = "double";
 
     @Element(name = CODE)
-    public double value;
+    double value;
 
     public DoubleValue(Double from) {
         this.value = from;

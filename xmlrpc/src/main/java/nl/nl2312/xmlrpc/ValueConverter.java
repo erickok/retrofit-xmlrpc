@@ -22,7 +22,7 @@ public final class ValueConverter implements Converter<Value> {
         value.write(node);
     }
 
-    static Value getValue(InputNode node) throws Exception {
+    private static Value getValue(InputNode node) throws Exception {
         switch (node.getName()) {
             case IntegerValue.CODE:
                 return IntegerValue.parse(node.getValue());

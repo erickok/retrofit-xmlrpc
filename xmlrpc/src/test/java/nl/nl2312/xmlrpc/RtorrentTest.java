@@ -12,6 +12,7 @@ import retrofit2.http.POST;
 import java.io.IOException;
 
 import static com.google.common.truth.Truth.assertThat;
+import static nl.nl2312.xmlrpc.Nothing.NOTHING;
 
 public final class RtorrentTest {
 
@@ -51,14 +52,14 @@ public final class RtorrentTest {
     @Test
     public void listMethods() throws IOException {
         TestService service = retrofit.create(TestService.class);
-        String[] execute = service.listMethods(new Object()).execute().body();
+        String[] execute = service.listMethods(NOTHING).execute().body();
         assertThat(execute).isNotEmpty();
     }
 
     @Test
     public void clientVersion() throws IOException {
         TestService service = retrofit.create(TestService.class);
-        String execute = service.clientVersion(new Object()).execute().body();
+        String execute = service.clientVersion(NOTHING).execute().body();
         assertThat(execute).isNotEmpty();
     }
 
@@ -88,23 +89,26 @@ public final class RtorrentTest {
 
         @XmlRpc("system.listMethods")
         @POST("/RPC2")
-        Call<String[]> listMethods(@Body Object nothing);
+        Call<String[]> listMethods(@Body Nothing nothing);
 
         @XmlRpc("system.client_version")
         @POST("/RPC2")
-        Call<String> clientVersion(@Body Object nothing);
+        Call<String> clientVersion(@Body Nothing nothing);
 
         @XmlRpc("download_list")
         @POST("/RPC2")
-        Call<String[]> downloadList(@Body String arg);
+        Call<String[]> downloadList(@Body String view);
 
         @XmlRpc("d.multicall2")
         @POST("/RPC2")
-        Call<Torrent[]> torrents(@Body String... args);
+        Call<Torrent[]> torrents(@Body String... fields);
 
     }
 
     public static final class Torrent {
+
+        static String staticField = "ignored";
+        public final String finalField = "ignore";
 
         public String hash;
         public String name;

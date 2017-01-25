@@ -1,6 +1,5 @@
 package nl.nl2312.xmlrpc;
 
-import com.google.common.truth.Truth;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okhttp3.mockwebserver.MockResponse;

@@ -15,7 +15,7 @@ import java.util.*;
  *
  * @see <a href="http://www.w3.org/TR/NOTE-datetime">this specification</a>
  */
-public final class Iso8601Utils {
+final class Iso8601Utils {
 
     @Deprecated // since 2.7
     private static final String GMT_ID = "GMT";

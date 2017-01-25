@@ -13,7 +13,7 @@ public final class IntegerValue implements Value {
     public static final String CODE_ALTERNTAIVE = "int";
 
     @Element(name = CODE)
-    public int value;
+    int value;
 
     public IntegerValue(Integer from) {
         this.value = from;

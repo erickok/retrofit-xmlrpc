@@ -12,7 +12,7 @@ public final class StringValue implements Value {
     public static final String CODE = "string";
 
     @Element(name = CODE)
-    public String value;
+    String value;
 
     public StringValue(String from) {
         this.value = from;
