@@ -98,7 +98,8 @@ public final class ArrayValue implements Value {
             Field[] fields = type.getFields();
             List<Field> targetFields = new ArrayList<>(fields.length);
             for (Field field : fields) {
-                if (!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
+                if (!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers()) && !Modifier
+                        .isTransient(field.getModifiers())) {
                     targetFields.add(field);
                 }
             }

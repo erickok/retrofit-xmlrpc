@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.google.common.truth.Truth.assertThat;
+import static nl.nl2312.xmlrpc.Nothing.NOTHING;
 
 public final class MockedTest {
 
@@ -108,19 +109,113 @@ public final class MockedTest {
         assertThat(execute).isEqualTo(60_000);
     }
 
+    @Test
+    public void family() throws IOException, InterruptedException {
+        server.enqueue(new MockResponse()
+                .addHeader("Content-Type", "application/xml; charset=UTF-8")
+                .setBody("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
+                        "<methodResponse>\n" +
+                        "   <params>\n" +
+                        "      <param>\n" +
+                        "         <value>\n" +
+                        "           <struct>\n" +
+                        "             <member>\n" +
+                        "               <name>name</name>\n" +
+                        "               <value><string>Me</string></value>\n" +
+                        "             </member>\n" +
+                        "             <member>\n" +
+                        "               <name>father</name>\n" +
+                        "               <value>\n" +
+                        "                 <struct>\n" +
+                        "                   <member>\n" +
+                        "                     <name>name</name>\n" +
+                        "                     <value><string>Dad</string></value>\n" +
+                        "                   </member>\n" +
+                        "                   <member>\n" +
+                        "                     <name>father</name>\n" +
+                        "                     <value>\n" +
+                        "                       <struct>\n" +
+                        "                         <member>\n" +
+                        "                           <name>name</name>\n" +
+                        "                           <value><string>Grandpa</string></value>\n" +
+                        "                         </member>\n" +
+                        "                       </struct>\n" +
+                        "                     </value>\n" +
+                        "                   </member>\n" +
+                        "                 </struct>\n" +
+                        "               </value>\n" +
+                        "             </member>\n" +
+                        "             <member>\n" +
+                        "               <name>mother</name>\n" +
+                        "               <value>\n" +
+                        "                 <struct>\n" +
+                        "                   <member>\n" +
+                        "                     <name>name</name>\n" +
+                        "                     <value><string>Mom</string></value>\n" +
+                        "                   </member>\n" +
+                        "                 </struct>\n" +
+                        "               </value>\n" +
+                        "             </member>\n" +
+                        "             <member>\n" +
+                        "               <name>siblings</name>\n" +
+                        "               <value>\n" +
+                        "                 <array>\n" +
+                        "                   <data>\n" +
+                        "                     <value>\n" +
+                        "                       <struct>\n" +
+                        "                         <member>\n" +
+                        "                           <name>name</name>\n" +
+                        "                           <value><string>Sis</string></value>\n" +
+                        "                         </member>\n" +
+                        "                       </struct>\n" +
+                        "                     </value>\n" +
+                        "                     <value>\n" +
+                        "                       <struct>\n" +
+                        "                         <member>\n" +
+                        "                           <name>name</name>\n" +
+                        "                           <value><string>Bro</string></value>\n" +
+                        "                         </member>\n" +
+                        "                       </struct>\n" +
+                        "                     </value>\n" +
+                        "                   </data>\n" +
+                        "                 </array>\n" +
+                        "               </value>\n" +
+                        "             </member>\n" +
+                        "           </struct>\n" +
+                        "         </value>\n" +
+                        "      </param>\n" +
+                        "   </params>\n" +
+                        "</methodResponse>"));
+
+        TestService service = retrofit.create(TestService.class);
+        Person execute = service.family(NOTHING).execute().body();
+        server.takeRequest();
+        assertThat(execute).isNotNull();
+        assertThat(execute.name).isEqualTo("Me");
+        assertThat(execute.father.name).isEqualTo("Dad");
+        assertThat(execute.father.father.name).isEqualTo("Grandpa");
+        assertThat(execute.mother.name).isEqualTo("Mom");
+        assertThat(execute.siblings[0].name).isEqualTo("Sis");
+        assertThat(execute.siblings[1].name).isEqualTo("Bro");
+    }
+
     interface TestService {
 
         @XmlRpc("system.listMethods")
-        @POST("/RPC2")
+        @POST("/mocked")
         Call<String[]> listMethods();
 
         @XmlRpc("multiply")
-        @POST("/RPC2")
+        @POST("/mocked")
         Call<Integer> multiply(@Body MultiplicationArgs args);
 
         @XmlRpc("dateSubstract")
-        @POST("/RPC2")
+        @POST("/mocked")
         Call<Long> dateSubstract(@Body List<Date> args);
+
+        @XmlRpc("family")
+        @POST("/mocked")
+        Call<Person> family(@Body Nothing nothing);
 
     }
 
@@ -133,6 +228,15 @@ public final class MockedTest {
             this.a = a;
             this.b = b;
         }
+
+    }
+
+    public static final class Person {
+
+        public String name;
+        public Person mother;
+        public Person father;
+        public Person[] siblings;
 
     }
 

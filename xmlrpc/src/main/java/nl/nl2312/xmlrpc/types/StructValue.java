@@ -7,6 +7,7 @@ import org.simpleframework.xml.stream.OutputNode;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 import static nl.nl2312.xmlrpc.types.StructValue.CODE;
@@ -37,8 +38,9 @@ public final class StructValue implements Value {
         Object t = type.newInstance();
         for (Field field : type.getDeclaredFields()) {
             Member fieldMember = findMember(field);
-            if (fieldMember != null) {
-                field.set(t, fieldMember.value.value());
+            if (fieldMember != null && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field
+                    .getModifiers()) && !Modifier.isTransient(field.getModifiers())) {
+                field.set(t, fieldMember.value.asObject(field.getType()));
             }
         }
         return t;
