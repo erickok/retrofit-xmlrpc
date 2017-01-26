@@ -199,6 +199,27 @@ public final class MockedTest {
         assertThat(execute.siblings[1].name).isEqualTo("Bro");
     }
 
+    @Test
+    public void addChildren() throws IOException, InterruptedException {
+        server.enqueue(new MockResponse()
+                .addHeader("Content-Type", "application/xml; charset=UTF-8")
+                .setBody("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
+                        "<methodResponse>\n" +
+                        "   <params>\n" +
+                        //"      <param>\n" +
+                        //"         <value><nil /></value>\n" +
+                        //"      </param>\n" +
+                        "   </params>\n" +
+                        "</methodResponse>"));
+
+        TestService service = retrofit.create(TestService.class);
+        List<Person> boys = Arrays.asList(new Person("Boy"), new Person("Garçon"));
+        Person[] girls = new Person[]{new Person("Girl"), new Person("Fille")};
+        Void execute = service.addChildren(new AddChildrenArgs(boys, girls)).execute().body();
+        server.takeRequest();
+        assertThat(execute).isNull();
+    }
+
     interface TestService {
 
         @XmlRpc("system.listMethods")
@@ -217,6 +238,10 @@ public final class MockedTest {
         @POST("/mocked")
         Call<Person> family(@Body Nothing nothing);
 
+        @XmlRpc("addChildren")
+        @POST("/mocked")
+        Call<Void> addChildren(@Body AddChildrenArgs args);
+
     }
 
     static final class MultiplicationArgs {
@@ -231,7 +256,26 @@ public final class MockedTest {
 
     }
 
+    static final class AddChildrenArgs {
+
+        final List<Person> boys;
+        final Person[] girls;
+
+        public AddChildrenArgs(List<Person> boys, Person[] girls) {
+            this.boys = boys;
+            this.girls = girls;
+        }
+
+    }
+
     public static final class Person {
+
+        public Person() {
+        }
+
+        public Person(String name) {
+            this.name = name;
+        }
 
         public String name;
         public Person mother;

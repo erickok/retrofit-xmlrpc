@@ -5,7 +5,6 @@ import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
 import org.simpleframework.xml.stream.OutputNode;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -16,6 +15,10 @@ import static nl.nl2312.xmlrpc.types.StructValue.CODE;
 public final class StructValue implements Value {
 
     public static final String CODE = "struct";
+
+    public StructValue(List<Member> members) {
+        this.members = members;
+    }
 
     @ElementList(inline = true)
     public List<Member> members;
@@ -48,22 +51,11 @@ public final class StructValue implements Value {
 
     private Member findMember(Field field) {
         for (Member member : members) {
-            if (field.getName().equals(member.name)) {
-                return member;
-            }
-            // TODO Optimize initialization of annotations
-            MemberName memberName = findFieldAnnotation(field.getAnnotations());
+            MemberName memberName = field.getAnnotation(MemberName.class);
             if (memberName != null && memberName.value().equals(member.name)) {
                 return member;
-            }
-        }
-        return null;
-    }
-
-    private MemberName findFieldAnnotation(Annotation[] annotations) {
-        for (Annotation annotation : annotations) {
-            if (annotation instanceof MemberName) {
-                return (MemberName) annotation;
+            } else if (memberName == null && field.getName().equals(member.name)) {
+                return member;
             }
         }
         return null;

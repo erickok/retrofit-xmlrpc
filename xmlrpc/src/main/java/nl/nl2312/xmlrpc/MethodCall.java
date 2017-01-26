@@ -47,7 +47,7 @@ final class MethodCall {
             Field[] fields = params.getClass().getDeclaredFields();
             methodCall.params = new ArrayList<>(fields.length);
             for (Field field : fields) {
-                if (Modifier.isStatic(field.getModifiers())) {
+                if (Modifier.isStatic(field.getModifiers()) || Modifier.isTransient(field.getModifiers())) {
                     continue;
                 }
                 try {

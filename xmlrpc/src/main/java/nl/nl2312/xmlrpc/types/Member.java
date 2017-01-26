@@ -21,9 +21,10 @@ public final class Member {
 
     public void write(OutputNode node) throws Exception {
         OutputNode member = node.getChild(CODE);
-        OutputNode memberNode = member.getChild(Member.NAME);
-        memberNode.setValue(name);
-        value.write(memberNode);
+        OutputNode nameNode = member.getChild(Member.NAME);
+        nameNode.setValue(name);
+        OutputNode valueNode = member.getChild(Value.CODE);
+        value.write(valueNode);
     }
 
     public static Member create(String name, Value from) {

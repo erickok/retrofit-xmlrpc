@@ -6,7 +6,11 @@ import org.simpleframework.xml.core.PersistenceException;
 import org.simpleframework.xml.stream.InputNode;
 import org.simpleframework.xml.stream.OutputNode;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -47,22 +51,36 @@ public final class ValueConverter implements Converter<Value> {
                 }
                 return new ArrayValue(data);
             case StructValue.CODE:
-                StructValue structValue = new StructValue();
-                structValue.members = new ArrayList<>();
+                List<Member> members = new ArrayList<>();
                 InputNode member = node.getNext();
                 do {
                     String name = member.getNext().getValue();
                     Value value = getValue(member.getNext().getNext());
-                    structValue.members.add(Member.create(name, value));
+                    members.add(Member.create(name, value));
                     member = node.getNext();
                 } while (member != null && member.getName().equals(Member.CODE));
-                return structValue;
+                return new StructValue(members);
         }
         throw new PersistenceException(node.getName() + " is an unsupported type in XML-RPC");
     }
 
     static Value getValue(Object value) {
-        if (value instanceof Integer) {
+        // TODO? Handle null as <nil />?
+        if (value.getClass().isArray()) {
+            int length = Array.getLength(value);
+            List<Value> values = new ArrayList<>(length);
+            for (int i = 0; i < length; i++) {
+                values.add(getValue(Array.get(value, i)));
+            }
+            return new ArrayValue(values);
+        } else if (value instanceof List) {
+            List list = (List) value;
+            List<Value> values = new ArrayList<>(list.size());
+            for (Object o : list) {
+                values.add(getValue(o));
+            }
+            return new ArrayValue(values);
+        } else if (value instanceof Integer) {
             return new IntegerValue((Integer) value);
         } else if (value instanceof Long) {
             return new LongValue((Long) value);
@@ -74,15 +92,25 @@ public final class ValueConverter implements Converter<Value> {
             return new StringValue((String) value);
         } else if (value instanceof Date) {
             return new DateValue((Date) value);
-        } else if (value instanceof List) {
-            List list = (List) value;
-            List<Value> values = new ArrayList<>(list.size());
-            for (Object o : list) {
-                values.add(getValue(o));
+        } else {
+            try {
+                List<Member> members = new ArrayList<>();
+                for (Field field : value.getClass().getFields()) {
+                    if (Modifier.isStatic(field.getModifiers()) || Modifier.isTransient(field.getModifiers())) {
+                        continue;
+                    }
+                    MemberName annotation = field.getAnnotation(MemberName.class);
+                    String memberName = annotation != null ? annotation.value() : field.getName();
+                    Object fieldValue = field.get(value);
+                    if (fieldValue != null) {
+                        members.add(Member.create(memberName, getValue(fieldValue)));
+                    }
+                }
+                return new StructValue(members);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(value.getClass().getSimpleName() + " is an unsupported type in XML-RPC");
             }
-            return new ArrayValue(values);
         }
-        throw new RuntimeException(value.getClass().getSimpleName() + " is an unsupported type in XML-RPC");
     }
 
 }
