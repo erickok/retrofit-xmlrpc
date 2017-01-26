@@ -30,7 +30,10 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 
 Properties properties = new Properties()
 File propFile = '/Users/erickok/.gradle/bintray.properties' as File
-properties.load(propFile.newDataInputStream())
+try {
+    properties.load(propFile.newDataInputStream())
+} catch (Exception e) {
+}
 
 bintray {
     user = properties.getProperty("bintray.user")
