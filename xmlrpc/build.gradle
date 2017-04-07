@@ -5,7 +5,7 @@ plugins {
 apply plugin: 'java'
 
 group = 'nl.2312'
-version = '0.0'
+version = '0.1'
 
 sourceCompatibility = 1.7
 
@@ -14,13 +14,13 @@ repositories {
 }
 
 dependencies {
-    compile 'com.squareup.retrofit2:retrofit:2.1.0'
+    compile 'com.squareup.retrofit2:retrofit:2.2.0'
     compile 'org.simpleframework:simple-xml:2.7.1'
 
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.5.0'
-    testCompile 'com.squareup.okhttp3:logging-interceptor:3.5.0'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.6.0'
+    testCompile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
     testCompile 'junit:junit:4.12'
-    testCompile 'com.google.truth:truth:0.31'
+    testCompile 'com.google.truth:truth:0.32'
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
@@ -45,7 +45,7 @@ bintray {
         licenses = ['Apache-2.0']
         vcsUrl = 'https://github.com/erickok/retrofit-xmlrpc.git'
         version {
-            name = '0.0'
+            name = '0.1'
         }
     }
 }
