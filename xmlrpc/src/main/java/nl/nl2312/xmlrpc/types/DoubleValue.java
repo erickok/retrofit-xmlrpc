@@ -28,7 +28,7 @@ public final class DoubleValue implements Value {
     }
 
     @Override
-    public Object asObject(Class<?> type) throws IllegalAccessException, InstantiationException {
+    public Object asObject(Class<?> type, Class<?> param) throws IllegalAccessException, InstantiationException {
         return value;
     }
 

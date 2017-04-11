@@ -5,6 +5,7 @@ import org.simpleframework.xml.Serializer;
 import retrofit2.Converter;
 
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -38,9 +39,17 @@ final class XmlRpcResponseBodyConverter<T> implements Converter<ResponseBody, T>
         if (params.size() > 1) {
             throw new RuntimeException("Unexpected XML-RPC response: methodResponse can only contain a single <param>");
         }
-        Class<T> clz = (Class<T>) returnType;
+        Class<T> clz;
+        Class<T> param = null;
+        if (returnType instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) returnType;
+            clz = (Class<T>) parameterizedType.getRawType();
+            param = (Class<T>) parameterizedType.getActualTypeArguments()[0];
+        } else {
+            clz = (Class<T>) returnType;
+        }
         try {
-            return (T) params.get(0).value.asObject(clz);
+            return (T) params.get(0).value.asObject(clz, param);
         } catch (InstantiationException e) {
             throw new RuntimeException("No no-arg constructor found for  " + clz.getSimpleName(), e);
         } catch (IllegalAccessException e) {

@@ -1,5 +1,6 @@
 package nl.nl2312.xmlrpc;
 
+import nl.nl2312.xmlrpc.annotations.XmlRpcObject;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okhttp3.mockwebserver.MockResponse;
@@ -113,79 +114,7 @@ public final class MockedTest {
     public void family() throws IOException, InterruptedException {
         server.enqueue(new MockResponse()
                 .addHeader("Content-Type", "application/xml; charset=UTF-8")
-                .setBody("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
-                        "<methodResponse>\n" +
-                        "   <params>\n" +
-                        "      <param>\n" +
-                        "         <value>\n" +
-                        "           <struct>\n" +
-                        "             <member>\n" +
-                        "               <name>name</name>\n" +
-                        "               <value><string>Me</string></value>\n" +
-                        "             </member>\n" +
-                        "             <member>\n" +
-                        "               <name>father</name>\n" +
-                        "               <value>\n" +
-                        "                 <struct>\n" +
-                        "                   <member>\n" +
-                        "                     <name>name</name>\n" +
-                        "                     <value><string>Dad</string></value>\n" +
-                        "                   </member>\n" +
-                        "                   <member>\n" +
-                        "                     <name>father</name>\n" +
-                        "                     <value>\n" +
-                        "                       <struct>\n" +
-                        "                         <member>\n" +
-                        "                           <name>name</name>\n" +
-                        "                           <value><string>Grandpa</string></value>\n" +
-                        "                         </member>\n" +
-                        "                       </struct>\n" +
-                        "                     </value>\n" +
-                        "                   </member>\n" +
-                        "                 </struct>\n" +
-                        "               </value>\n" +
-                        "             </member>\n" +
-                        "             <member>\n" +
-                        "               <name>mother</name>\n" +
-                        "               <value>\n" +
-                        "                 <struct>\n" +
-                        "                   <member>\n" +
-                        "                     <name>name</name>\n" +
-                        "                     <value><string>Mom</string></value>\n" +
-                        "                   </member>\n" +
-                        "                 </struct>\n" +
-                        "               </value>\n" +
-                        "             </member>\n" +
-                        "             <member>\n" +
-                        "               <name>siblings</name>\n" +
-                        "               <value>\n" +
-                        "                 <array>\n" +
-                        "                   <data>\n" +
-                        "                     <value>\n" +
-                        "                       <struct>\n" +
-                        "                         <member>\n" +
-                        "                           <name>name</name>\n" +
-                        "                           <value><string>Sis</string></value>\n" +
-                        "                         </member>\n" +
-                        "                       </struct>\n" +
-                        "                     </value>\n" +
-                        "                     <value>\n" +
-                        "                       <struct>\n" +
-                        "                         <member>\n" +
-                        "                           <name>name</name>\n" +
-                        "                           <value><string>Bro</string></value>\n" +
-                        "                         </member>\n" +
-                        "                       </struct>\n" +
-                        "                     </value>\n" +
-                        "                   </data>\n" +
-                        "                 </array>\n" +
-                        "               </value>\n" +
-                        "             </member>\n" +
-                        "           </struct>\n" +
-                        "         </value>\n" +
-                        "      </param>\n" +
-                        "   </params>\n" +
-                        "</methodResponse>"));
+                .setBody(BODY_FAMILY));
 
         TestService service = retrofit.create(TestService.class);
         Person execute = service.family(NOTHING).execute().body();
@@ -197,6 +126,42 @@ public final class MockedTest {
         assertThat(execute.mother.name).isEqualTo("Mom");
         assertThat(execute.siblings[0].name).isEqualTo("Sis");
         assertThat(execute.siblings[1].name).isEqualTo("Bro");
+    }
+
+    @Test
+    public void family2() throws IOException, InterruptedException {
+        server.enqueue(new MockResponse()
+                .addHeader("Content-Type", "application/xml; charset=UTF-8")
+                .setBody(BODY_FAMILY));
+
+        TestService service = retrofit.create(TestService.class);
+        Person2 execute = service.family2(NOTHING).execute().body();
+        server.takeRequest();
+        assertThat(execute).isNotNull();
+        assertThat(execute.name).isEqualTo("Me");
+        assertThat(execute.father.name).isEqualTo("Dad");
+        assertThat(execute.father.father.name).isEqualTo("Grandpa");
+        assertThat(execute.mother.name).isEqualTo("Mom");
+        assertThat(execute.siblings.get(0).name).isEqualTo("Sis");
+        assertThat(execute.siblings.get(1).name).isEqualTo("Bro");
+    }
+
+    @Test
+    public void family3() throws IOException, InterruptedException {
+        server.enqueue(new MockResponse()
+                .addHeader("Content-Type", "application/xml; charset=UTF-8")
+                .setBody(BODY_FAMILY));
+
+        TestService service = retrofit.create(TestService.class);
+        Person3 execute = service.family3(NOTHING).execute().body();
+        server.takeRequest();
+        assertThat(execute).isNotNull();
+        assertThat(execute.name).isEqualTo("Me");
+        assertThat(execute.father.name).isEqualTo("Dad");
+        assertThat(execute.father.father.name).isEqualTo("Grandpa");
+        assertThat(execute.mother.name).isEqualTo("Mom");
+        assertThat(execute.siblings.get(0).name).isEqualTo("Sis");
+        assertThat(execute.siblings.get(1).name).isEqualTo("Bro");
     }
 
     @Test
@@ -238,6 +203,14 @@ public final class MockedTest {
         @POST("/mocked")
         Call<Person> family(@Body Nothing nothing);
 
+        @XmlRpc("family")
+        @POST("/mocked")
+        Call<Person2> family2(@Body Nothing nothing);
+
+        @XmlRpc("family")
+        @POST("/mocked")
+        Call<Person3> family3(@Body Nothing nothing);
+
         @XmlRpc("addChildren")
         @POST("/mocked")
         Call<Void> addChildren(@Body AddChildrenArgs args);
@@ -268,6 +241,7 @@ public final class MockedTest {
 
     }
 
+    @XmlRpcObject(DeserialisationMode.FIELDS)
     public static final class Person {
 
         public Person() {
@@ -278,10 +252,114 @@ public final class MockedTest {
         }
 
         public String name;
-        public Person mother;
-        public Person father;
-        public Person[] siblings;
+        public Person2 mother;
+        public Person2 father;
+        public Person2[] siblings;
 
     }
+
+    @XmlRpcObject(DeserialisationMode.CONSTRUCTOR)
+    public static class Person2 {
+
+        public Person2(String name) {
+            this.name = name;
+        }
+
+        public Person2(String name, Person father, Person mother, List<Person> siblings) {
+            this.name = name;
+            this.father = father;
+            this.mother = mother;
+            this.siblings = siblings;
+        }
+
+        public String name;
+        public Person father;
+        public Person mother;
+        public List<Person> siblings;
+
+    }
+
+    @XmlRpcObject(DeserialisationMode.CREATOR)
+    public static final class Person3 extends Person2 {
+
+        public Person3(String name, Person father, Person mother, List<Person> siblings) {
+            super(name, father, mother, siblings);
+        }
+
+    }
+
+    private static final String BODY_FAMILY = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
+            "<methodResponse>\n" +
+            "   <params>\n" +
+            "      <param>\n" +
+            "         <value>\n" +
+            "           <struct>\n" +
+            "             <member>\n" +
+            "               <name>name</name>\n" +
+            "               <value><string>Me</string></value>\n" +
+            "             </member>\n" +
+            "             <member>\n" +
+            "               <name>father</name>\n" +
+            "               <value>\n" +
+            "                 <struct>\n" +
+            "                   <member>\n" +
+            "                     <name>name</name>\n" +
+            "                     <value><string>Dad</string></value>\n" +
+            "                   </member>\n" +
+            "                   <member>\n" +
+            "                     <name>father</name>\n" +
+            "                     <value>\n" +
+            "                       <struct>\n" +
+            "                         <member>\n" +
+            "                           <name>name</name>\n" +
+            "                           <value><string>Grandpa</string></value>\n" +
+            "                         </member>\n" +
+            "                       </struct>\n" +
+            "                     </value>\n" +
+            "                   </member>\n" +
+            "                 </struct>\n" +
+            "               </value>\n" +
+            "             </member>\n" +
+            "             <member>\n" +
+            "               <name>mother</name>\n" +
+            "               <value>\n" +
+            "                 <struct>\n" +
+            "                   <member>\n" +
+            "                     <name>name</name>\n" +
+            "                     <value><string>Mom</string></value>\n" +
+            "                   </member>\n" +
+            "                 </struct>\n" +
+            "               </value>\n" +
+            "             </member>\n" +
+            "             <member>\n" +
+            "               <name>siblings</name>\n" +
+            "               <value>\n" +
+            "                 <array>\n" +
+            "                   <data>\n" +
+            "                     <value>\n" +
+            "                       <struct>\n" +
+            "                         <member>\n" +
+            "                           <name>name</name>\n" +
+            "                           <value><string>Sis</string></value>\n" +
+            "                         </member>\n" +
+            "                       </struct>\n" +
+            "                     </value>\n" +
+            "                     <value>\n" +
+            "                       <struct>\n" +
+            "                         <member>\n" +
+            "                           <name>name</name>\n" +
+            "                           <value><string>Bro</string></value>\n" +
+            "                         </member>\n" +
+            "                       </struct>\n" +
+            "                     </value>\n" +
+            "                   </data>\n" +
+            "                 </array>\n" +
+            "               </value>\n" +
+            "             </member>\n" +
+            "           </struct>\n" +
+            "         </value>\n" +
+            "      </param>\n" +
+            "   </params>\n" +
+            "</methodResponse>";
 
 }

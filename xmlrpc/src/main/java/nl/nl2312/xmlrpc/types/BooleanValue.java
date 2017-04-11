@@ -4,8 +4,6 @@ import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 import org.simpleframework.xml.stream.OutputNode;
 
-import java.lang.reflect.Field;
-
 @Root
 public final class BooleanValue implements Value {
 
@@ -32,7 +30,7 @@ public final class BooleanValue implements Value {
     }
 
     @Override
-    public Object asObject(Class<?> type) throws IllegalAccessException, InstantiationException {
+    public Object asObject(Class<?> type, Class<?> param) throws IllegalAccessException, InstantiationException {
         return value;
     }
 

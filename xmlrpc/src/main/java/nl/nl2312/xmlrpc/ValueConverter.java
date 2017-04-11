@@ -1,5 +1,6 @@
 package nl.nl2312.xmlrpc;
 
+import nl.nl2312.xmlrpc.annotations.MemberName;
 import nl.nl2312.xmlrpc.types.*;
 import org.simpleframework.xml.convert.Converter;
 import org.simpleframework.xml.core.PersistenceException;
@@ -10,7 +11,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 

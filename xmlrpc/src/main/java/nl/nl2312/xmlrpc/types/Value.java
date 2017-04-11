@@ -10,6 +10,6 @@ public interface Value {
 
     void write(OutputNode node) throws Exception;
 
-    Object asObject(Class<?> type) throws IllegalAccessException, InstantiationException;
+    Object asObject(Class<?> type, Class<?> param) throws IllegalAccessException, InstantiationException;
 
 }

@@ -1,5 +1,6 @@
 package nl.nl2312.xmlrpc;
 
+import nl.nl2312.xmlrpc.annotations.MemberName;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.junit.Before;
