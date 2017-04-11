@@ -1,5 +1,6 @@
 package nl.nl2312.xmlrpc;
 
+import nl.nl2312.xmlrpc.deserialization.DeserializationContext;
 import okhttp3.ResponseBody;
 import org.simpleframework.xml.Serializer;
 import retrofit2.Converter;
@@ -12,10 +13,12 @@ import java.util.List;
 final class XmlRpcResponseBodyConverter<T> implements Converter<ResponseBody, T> {
 
     private final Serializer serializer;
+    private final DeserializationContext context;
     private final Type returnType;
 
-    XmlRpcResponseBodyConverter(Serializer serializer, Type returnType) {
+    XmlRpcResponseBodyConverter(Serializer serializer, DeserializationContext context, Type returnType) {
         this.serializer = serializer;
+        this.context = context;
         this.returnType = returnType;
     }
 
@@ -49,11 +52,11 @@ final class XmlRpcResponseBodyConverter<T> implements Converter<ResponseBody, T>
             clz = (Class<T>) returnType;
         }
         try {
-            return (T) params.get(0).value.asObject(clz, param);
+            return (T) params.get(0).value.asObject(context, clz, param);
         } catch (InstantiationException e) {
-            throw new RuntimeException("No no-arg constructor found for  " + clz.getSimpleName(), e);
+            throw new RuntimeException("Can't construct instance of " + clz.getSimpleName(), e);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("No access to no-args constructor or field of " + clz.getSimpleName(), e);
+            throw new RuntimeException("No access to constructor or field of " + clz.getSimpleName(), e);
         }
     }
 

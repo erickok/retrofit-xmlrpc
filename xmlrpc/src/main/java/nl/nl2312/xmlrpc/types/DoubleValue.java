@@ -1,5 +1,6 @@
 package nl.nl2312.xmlrpc.types;
 
+import nl.nl2312.xmlrpc.deserialization.DeserializationContext;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 import org.simpleframework.xml.stream.OutputNode;
@@ -28,7 +29,7 @@ public final class DoubleValue implements Value {
     }
 
     @Override
-    public Object asObject(Class<?> type, Class<?> param) throws IllegalAccessException, InstantiationException {
+    public Object asObject(DeserializationContext context, Class<?> type, Class<?> param) throws IllegalAccessException, InstantiationException {
         return value;
     }
 

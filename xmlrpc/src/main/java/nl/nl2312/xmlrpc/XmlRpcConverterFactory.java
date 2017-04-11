@@ -1,5 +1,8 @@
 package nl.nl2312.xmlrpc;
 
+import nl.nl2312.xmlrpc.deserialization.ArrayDeserializer;
+import nl.nl2312.xmlrpc.deserialization.DeserializationContext;
+import nl.nl2312.xmlrpc.deserialization.StructDeserializer;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import org.simpleframework.xml.Serializer;
@@ -14,13 +17,19 @@ import java.lang.reflect.Type;
 public final class XmlRpcConverterFactory extends Converter.Factory {
 
     private final Serializer serializer;
+    private final DeserializationContext context;
 
-    public static Converter.Factory create() {
-        return new XmlRpcConverterFactory(new Persister(new AnnotationStrategy()));
+    public static Builder builder() {
+        return new Builder();
     }
 
-    private XmlRpcConverterFactory(Serializer serializer) {
+    public static Converter.Factory create() {
+        return builder().create();
+    }
+
+    private XmlRpcConverterFactory(Serializer serializer, DeserializationContext context) {
         this.serializer = serializer;
+        this.context = context;
     }
 
     @Override
@@ -39,7 +48,7 @@ public final class XmlRpcConverterFactory extends Converter.Factory {
         if (annotation == null) {
             return null;
         }
-        return new XmlRpcResponseBodyConverter<>(serializer, type);
+        return new XmlRpcResponseBodyConverter<>(serializer, context, type);
     }
 
     private XmlRpc getAnnotation(Annotation[] annotations) {
@@ -51,6 +60,26 @@ public final class XmlRpcConverterFactory extends Converter.Factory {
             }
         }
         return null;
+    }
+
+    public static class Builder {
+
+        private DeserializationContext context = new DeserializationContext();
+
+        public Converter.Factory create() {
+            return new XmlRpcConverterFactory(new Persister(new AnnotationStrategy()), context);
+        }
+
+        public <T> Builder addStructDeserializer(Class<T> clazz, StructDeserializer<T> structDeserializer) {
+            context.addStructDeserializer(clazz, structDeserializer);
+            return this;
+        }
+
+        public <T> Builder addArrayDeserializer(Class<T> clazz, ArrayDeserializer<T> arrayDeserializer) {
+            context.addArrayDeserializer(clazz, arrayDeserializer);
+            return this;
+        }
+
     }
 
 }

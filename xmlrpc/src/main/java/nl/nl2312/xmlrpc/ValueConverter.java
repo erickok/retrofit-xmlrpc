@@ -1,6 +1,6 @@
 package nl.nl2312.xmlrpc;
 
-import nl.nl2312.xmlrpc.annotations.MemberName;
+import nl.nl2312.xmlrpc.deserialization.MemberName;
 import nl.nl2312.xmlrpc.types.*;
 import org.simpleframework.xml.convert.Converter;
 import org.simpleframework.xml.core.PersistenceException;

@@ -1,4 +1,4 @@
-package nl.nl2312.xmlrpc.annotations;
+package nl.nl2312.xmlrpc.deserialization;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,6 +1,9 @@
 package nl.nl2312.xmlrpc;
 
-import nl.nl2312.xmlrpc.annotations.XmlRpcObject;
+import nl.nl2312.xmlrpc.deserialization.ArrayDeserializer;
+import nl.nl2312.xmlrpc.deserialization.ArrayValues;
+import nl.nl2312.xmlrpc.deserialization.StructDeserializer;
+import nl.nl2312.xmlrpc.deserialization.StructMembers;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okhttp3.mockwebserver.MockResponse;
@@ -40,7 +43,28 @@ public final class MockedTest {
         retrofit = new Retrofit.Builder()
                 .client(client)
                 .baseUrl(server.url("/"))
-                .addConverterFactory(XmlRpcConverterFactory.create())
+                .addConverterFactory(XmlRpcConverterFactory.builder()
+                        .addStructDeserializer(PersonWithConstructor.class, new
+                                StructDeserializer<PersonWithConstructor>() {
+                                    @Override
+                                    public PersonWithConstructor deserialize(StructMembers structMembers) {
+                                        return new PersonWithConstructor(
+                                                structMembers.asString("name"),
+                                                structMembers.asObject("mother", Person.class),
+                                                structMembers.asObject("father", Person.class),
+                                                structMembers.asList("siblings", Person.class));
+                                    }
+                                })
+                        .addArrayDeserializer(PostWithConstructor.class, new ArrayDeserializer<PostWithConstructor>() {
+                            @Override
+                            public PostWithConstructor deserialize(ArrayValues values) {
+                                return new PostWithConstructor(
+                                        values.asInteger(0),
+                                        values.asString(1),
+                                        values.asDate(2));
+                            }
+                        })
+                        .create())
                 .build();
     }
 
@@ -129,31 +153,13 @@ public final class MockedTest {
     }
 
     @Test
-    public void family2() throws IOException, InterruptedException {
+    public void family_structDeserializer() throws IOException, InterruptedException {
         server.enqueue(new MockResponse()
                 .addHeader("Content-Type", "application/xml; charset=UTF-8")
                 .setBody(BODY_FAMILY));
 
         TestService service = retrofit.create(TestService.class);
-        Person2 execute = service.family2(NOTHING).execute().body();
-        server.takeRequest();
-        assertThat(execute).isNotNull();
-        assertThat(execute.name).isEqualTo("Me");
-        assertThat(execute.father.name).isEqualTo("Dad");
-        assertThat(execute.father.father.name).isEqualTo("Grandpa");
-        assertThat(execute.mother.name).isEqualTo("Mom");
-        assertThat(execute.siblings.get(0).name).isEqualTo("Sis");
-        assertThat(execute.siblings.get(1).name).isEqualTo("Bro");
-    }
-
-    @Test
-    public void family3() throws IOException, InterruptedException {
-        server.enqueue(new MockResponse()
-                .addHeader("Content-Type", "application/xml; charset=UTF-8")
-                .setBody(BODY_FAMILY));
-
-        TestService service = retrofit.create(TestService.class);
-        Person3 execute = service.family3(NOTHING).execute().body();
+        PersonWithConstructor execute = service.familyWithConstructor(NOTHING).execute().body();
         server.takeRequest();
         assertThat(execute).isNotNull();
         assertThat(execute.name).isEqualTo("Me");
@@ -185,6 +191,44 @@ public final class MockedTest {
         assertThat(execute).isNull();
     }
 
+    @Test
+    public void posts() throws IOException, InterruptedException {
+        server.enqueue(new MockResponse()
+                .addHeader("Content-Type", "application/xml; charset=UTF-8")
+                .setBody(BODY_POSTS));
+
+        TestService service = retrofit.create(TestService.class);
+        List<Post> posts = service.posts(NOTHING).execute().body();
+        server.takeRequest();
+        assertThat(posts).isNotEmpty();
+        assertThat(posts.size()).isEqualTo(2);
+        assertThat(posts.get(0).id).isEqualTo(10);
+        assertThat(posts.get(0).name).isEqualTo("retrofit");
+        assertThat(posts.get(0).published).isEqualTo(new Date(1485300461000L));
+        assertThat(posts.get(1).id).isEqualTo(11);
+        assertThat(posts.get(1).name).isEqualTo("xmlrpc");
+        assertThat(posts.get(1).published).isEqualTo(new Date(1485184689000L));
+    }
+
+    @Test
+    public void posts_arrayDeserializer() throws IOException, InterruptedException {
+        server.enqueue(new MockResponse()
+                .addHeader("Content-Type", "application/xml; charset=UTF-8")
+                .setBody(BODY_POSTS));
+
+        TestService service = retrofit.create(TestService.class);
+        PostWithConstructor[] posts = service.postsWithConstructor(NOTHING).execute().body();
+        server.takeRequest();
+        assertThat(posts).isNotEmpty();
+        assertThat(posts.length).isEqualTo(2);
+        assertThat(posts[0].id).isEqualTo(10);
+        assertThat(posts[0].name).isEqualTo("retrofit");
+        assertThat(posts[0].published).isEqualTo(new Date(1485300461000L));
+        assertThat(posts[1].id).isEqualTo(11);
+        assertThat(posts[1].name).isEqualTo("xmlrpc");
+        assertThat(posts[1].published).isEqualTo(new Date(1485184689000L));
+    }
+
     interface TestService {
 
         @XmlRpc("system.listMethods")
@@ -205,15 +249,19 @@ public final class MockedTest {
 
         @XmlRpc("family")
         @POST("/mocked")
-        Call<Person2> family2(@Body Nothing nothing);
-
-        @XmlRpc("family")
-        @POST("/mocked")
-        Call<Person3> family3(@Body Nothing nothing);
+        Call<PersonWithConstructor> familyWithConstructor(@Body Nothing nothing);
 
         @XmlRpc("addChildren")
         @POST("/mocked")
         Call<Void> addChildren(@Body AddChildrenArgs args);
+
+        @XmlRpc("posts")
+        @POST("/mocked")
+        Call<List<Post>> posts(@Body Nothing nothing);
+
+        @XmlRpc("posts")
+        @POST("/mocked")
+        Call<PostWithConstructor[]> postsWithConstructor(@Body Nothing nothing);
 
     }
 
@@ -241,8 +289,12 @@ public final class MockedTest {
 
     }
 
-    @XmlRpcObject(DeserialisationMode.FIELDS)
     public static final class Person {
+
+        public String name;
+        public PersonWithConstructor mother;
+        public PersonWithConstructor father;
+        public PersonWithConstructor[] siblings;
 
         public Person() {
         }
@@ -251,39 +303,42 @@ public final class MockedTest {
             this.name = name;
         }
 
-        public String name;
-        public Person2 mother;
-        public Person2 father;
-        public Person2[] siblings;
-
     }
 
-    @XmlRpcObject(DeserialisationMode.CONSTRUCTOR)
-    public static class Person2 {
+    public static class PersonWithConstructor {
 
-        public Person2(String name) {
-            this.name = name;
-        }
+        public final String name;
+        public final Person mother;
+        public final Person father;
+        public final List<Person> siblings;
 
-        public Person2(String name, Person father, Person mother, List<Person> siblings) {
+        public PersonWithConstructor(String name, Person mother, Person father, List<Person> siblings) {
             this.name = name;
-            this.father = father;
             this.mother = mother;
+            this.father = father;
             this.siblings = siblings;
         }
 
+    }
+
+    public static class Post {
+
+        public int id;
         public String name;
-        public Person father;
-        public Person mother;
-        public List<Person> siblings;
+        public Date published;
 
     }
 
-    @XmlRpcObject(DeserialisationMode.CREATOR)
-    public static final class Person3 extends Person2 {
+    public static class PostWithConstructor {
 
-        public Person3(String name, Person father, Person mother, List<Person> siblings) {
-            super(name, father, mother, siblings);
+        public final int id;
+        public final String name;
+        public final Date published;
+
+        public PostWithConstructor(int id, String name, Date published) {
+            this.id = id;
+            this.name = name;
+            this.published = published;
         }
 
     }
@@ -359,6 +414,40 @@ public final class MockedTest {
             "           </struct>\n" +
             "         </value>\n" +
             "      </param>\n" +
+            "   </params>\n" +
+            "</methodResponse>";
+
+    private static final String BODY_POSTS = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
+            "<methodResponse>\n" +
+            "   <params>\n" +
+            "       <param>\n" +
+            "          <value>\n" +
+            "             <array>\n" +
+            "                 <data>\n" +
+            "                     <value>\n" +
+            "                         <array>\n" +
+            "                             <data>\n" +
+            "                                 <value><i4>10</i4></value>\n" +
+            "                                 <value><string>retrofit</string></value>\n" +
+            "                                 <value><dateTime.iso8601>2017-01-24T23:27:41+00:00</dateTime" +
+            ".iso8601></value>\n" +
+            "                             </data>\n" +
+            "                         </array>\n" +
+            "                     </value>\n" +
+            "                     <value>\n" +
+            "                         <array>\n" +
+            "                             <data>\n" +
+            "                                 <value><i4>11</i4></value>\n" +
+            "                                 <value><string>xmlrpc</string></value>\n" +
+            "                                 <value><dateTime.iso8601>2017-01-23T15:18:09+00:00</dateTime" +
+            ".iso8601></value>\n" +
+            "                             </data>\n" +
+            "                         </array>\n" +
+            "                     </value>\n" +
+            "                 </data>\n" +
+            "             </array>\n" +
+            "          </value>\n" +
+            "       </param>\n" +
             "   </params>\n" +
             "</methodResponse>";
 

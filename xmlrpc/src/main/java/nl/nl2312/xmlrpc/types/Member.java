@@ -13,7 +13,7 @@ public final class Member {
     public static final String NAME = "name";
 
     @Element(name = NAME)
-    String name;
+    public String name;
 
     @Element(name = Value.CODE)
     @Convert(ValueConverter.class)

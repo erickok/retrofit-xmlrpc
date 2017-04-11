@@ -1,7 +1,7 @@
 package nl.nl2312.xmlrpc.types;
 
-import nl.nl2312.xmlrpc.DeserialisationMode;
-import nl.nl2312.xmlrpc.annotations.XmlRpcObject;
+import nl.nl2312.xmlrpc.deserialization.ArrayValues;
+import nl.nl2312.xmlrpc.deserialization.DeserializationContext;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
 import org.simpleframework.xml.stream.OutputNode;
@@ -40,8 +40,11 @@ public final class ArrayValue implements Value {
     }
 
     @Override
-    public Object asObject(Class<?> type, Class<?> param) throws IllegalAccessException, InstantiationException {
-        if (type.isArray()) {
+    public Object asObject(DeserializationContext context, Class<?> type, Class<?> param) throws
+            IllegalAccessException, InstantiationException {
+        if (context.hasArrayDeserializer(type)) {
+            return context.arrayDeserializer(type).deserialize(new ArrayValues(context, data));
+        } else if (type.isArray()) {
             Class<?> componentType = type.getComponentType();
             if (componentType.equals(Boolean.TYPE)) {
                 boolean[] values = new boolean[data.size()];
@@ -76,13 +79,13 @@ public final class ArrayValue implements Value {
             } else if (data.size() > 0 && data.get(0) instanceof StructValue) {
                 Object values = Array.newInstance(componentType, data.size());
                 for (int i = 0; i < data.size(); i++) {
-                    Array.set(values, i, data.get(i).asObject(componentType, null));
+                    Array.set(values, i, data.get(i).asObject(context, componentType, null));
                 }
                 return values;
             } else if (data.size() > 0 && data.get(0) instanceof ArrayValue) {
                 Object values = Array.newInstance(componentType, data.size());
                 for (int i = 0; i < data.size(); i++) {
-                    Array.set(values, i, data.get(i).asObject(componentType, null));
+                    Array.set(values, i, data.get(i).asObject(context, componentType, null));
                 }
                 return values;
             } else {
@@ -91,60 +94,33 @@ public final class ArrayValue implements Value {
         } else if (List.class.isAssignableFrom(type)) {
             List list = new ArrayList();
             for (Value datum : data) {
-                list.add(datum.asObject(param, null));
+                list.add(datum.asObject(context, param, null));
             }
             return list;
         } else {
-            Object t;
-            XmlRpcObject annotation = type.getAnnotation(XmlRpcObject.class);
-            if (annotation == null || annotation.value() == DeserialisationMode.FIELDS) {
-                // Deserialize using value to field mapping
-                Field[] fields = type.getFields();
-                List<Field> targetFields = new ArrayList<>(fields.length);
-                for (Field field : fields) {
-                    if (!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers()) && !Modifier
-                            .isTransient(field.getModifiers())) {
-                        targetFields.add(field);
-                    }
+            // Deserialize using value to field mapping
+            Field[] fields = type.getFields();
+            List<Field> targetFields = new ArrayList<>(fields.length);
+            for (Field field : fields) {
+                if (!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers()) && !Modifier
+                        .isTransient(field.getModifiers())) {
+                    targetFields.add(field);
                 }
-                if (data.size() != targetFields.size()) {
-                    throw new RuntimeException("Tried to load array with " + data.size() + " elements into type " + type
-                            .getSimpleName() + " with " + targetFields.size() + " fields");
+            }
+            if (data.size() != targetFields.size()) {
+                throw new RuntimeException("Tried to load array with " + data.size() + " elements into type " + type
+                        .getSimpleName() + " with " + targetFields.size() + " suitable fields (non-static, " +
+                        "non-final, non-transient)");
+            }
+            Object t = type.newInstance();
+            for (int i = 0; i < targetFields.size(); i++) {
+                Field targetField = targetFields.get(i);
+                Class<?> targetFieldParam = null;
+                Type targetFieldType = targetField.getGenericType();
+                if (targetFieldType instanceof ParameterizedType) {
+                    targetFieldParam = (Class<?>) ((ParameterizedType) targetFieldType).getActualTypeArguments()[0];
                 }
-                t = type.newInstance();
-                for (int i = 0; i < targetFields.size(); i++) {
-                    Field targetField = targetFields.get(i);
-                    Class<?> targetFieldParam = null;
-                    Type targetFieldType = targetField.getGenericType();
-                    if (targetFieldType instanceof ParameterizedType) {
-                        targetFieldParam = (Class<?>) ((ParameterizedType) targetFieldType).getActualTypeArguments()[0];
-                    }
-                    targetField.set(t, data.get(i).asObject(targetField.getType(), targetFieldParam));
-                }
-            } else {
-                // Deserialize using value to constructor parameters
-                Constructor<?> ctor = null;
-                for (Constructor<?> constructor : type.getConstructors()) {
-                    if (constructor.getParameterTypes().length == data.size()) {
-                        ctor = constructor;
-                        break;
-                    }
-                }
-                if (ctor == null) {
-                    throw new RuntimeException("No " + type.getSimpleName() + " constructor found with " + data.size()
-                            + " parameters, matching the " + data.size() + " array elements");
-                }
-                try {
-                    Object[] params = new Object[data.size()];
-                    Class<?>[] paramTypes = ctor.getParameterTypes();
-                    for (int i = 0; i < data.size(); i++) {
-                        params[i] = data.get(i).asObject(paramTypes[i], null);
-                    }
-                    t = ctor.newInstance(params);
-                } catch (InvocationTargetException e) {
-                    throw new RuntimeException("The " + type.getSimpleName() + " constructor with " + data.size()
-                            + " parameters was suitable, but it is not accessible");
-                }
+                targetField.set(t, data.get(i).asObject(context, targetField.getType(), targetFieldParam));
             }
             return t;
         }

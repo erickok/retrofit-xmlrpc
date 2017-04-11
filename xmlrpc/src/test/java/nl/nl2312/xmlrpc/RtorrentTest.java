@@ -1,6 +1,5 @@
 package nl.nl2312.xmlrpc;
 
-import nl.nl2312.xmlrpc.annotations.XmlRpcObject;
 import okhttp3.*;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.junit.Before;
@@ -11,7 +10,6 @@ import retrofit2.http.Body;
 import retrofit2.http.POST;
 
 import java.io.IOException;
-import java.util.List;
 
 import static com.google.common.truth.Truth.assertThat;
 import static nl.nl2312.xmlrpc.Nothing.NOTHING;
@@ -87,21 +85,6 @@ public final class RtorrentTest {
         assertThat(execute[0].size).isGreaterThan(0L);
     }
 
-    @Test
-    public void torrents_viaConstructor() throws IOException {
-        TestService service = retrofit.create(TestService.class);
-        List<Torrent2> execute = service.torrents2(
-                "",
-                "main",
-                "d.hash=",
-                "d.get_name=",
-                "d.get_size_bytes=").execute().body();
-        assertThat(execute).isNotEmpty();
-        assertThat(execute.get(0).hash).isNotEmpty();
-        assertThat(execute.get(0).name).isNotEmpty();
-        assertThat(execute.get(0).size).isGreaterThan(0L);
-    }
-
     interface TestService {
 
         @XmlRpc("system.listMethods")
@@ -120,10 +103,6 @@ public final class RtorrentTest {
         @POST("/RPC2")
         Call<Torrent[]> torrents(@Body String... fields);
 
-        @XmlRpc("d.multicall2")
-        @POST("/RPC2")
-        Call<List<Torrent2>> torrents2(@Body String... fields);
-
     }
 
     public static final class Torrent {
@@ -134,24 +113,6 @@ public final class RtorrentTest {
         public String hash;
         public String name;
         public long size;
-
-    }
-
-    @XmlRpcObject(DeserialisationMode.CONSTRUCTOR)
-    public static final class Torrent2 {
-
-        static String staticField = "ignored";
-        public final String finalField = "ignore";
-
-        public final String hash;
-        public final String name;
-        public final long size;
-
-        public Torrent2(String hash, String name, long size) {
-            this.hash = hash;
-            this.name = name;
-            this.size = size;
-        }
 
     }
 
