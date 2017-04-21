@@ -94,6 +94,7 @@ public final class ArrayValue implements Value {
         } else if (List.class.isAssignableFrom(type)) {
             List list = new ArrayList();
             for (Value datum : data) {
+                //noinspection unchecked Raw List used, but type is enforced via explicit parameter class
                 list.add(datum.asObject(context, param, null));
             }
             return list;

@@ -8,6 +8,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.Before;
 import org.junit.Test;
 import retrofit2.Call;
@@ -229,6 +230,58 @@ public final class MockedTest {
         assertThat(posts[1].published).isEqualTo(new Date(1485184689000L));
     }
 
+    @Test
+    public void storeBlob() throws IOException, InterruptedException {
+        server.enqueue(new MockResponse()
+                .addHeader("Content-Type", "application/xml; charset=UTF-8")
+                .setBody("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
+                        "<methodResponse>\n" +
+                        "   <params>\n" +
+                        "      <param>\n" +
+                        "         <value><base64>eW91IGNhbid0IHJlYWQgdGhpcyE=</base64></value>\n" +
+                        "      </param>\n" +
+                        "   </params>\n" +
+                        "</methodResponse>"));
+        String message = "you can't read this!";
+
+        TestService service = retrofit.create(TestService.class);
+        byte[] storedBlob = service.storeBlob(message.getBytes()).execute().body();
+        assertThat(storedBlob).isNotEmpty();
+        assertThat(new String(storedBlob)).isEqualTo("you can't read this!");
+
+        RecordedRequest request = server.takeRequest();
+        assertThat(request.getBody()).isNotNull();
+        assertThat(request.getBody().readUtf8()).isEqualTo(
+                "<methodCall>\n" +
+                        "   <methodName>storeBlob</methodName>\n" +
+                        "   <params class=\"java.util.Collections$SingletonList\">\n" +
+                        "      <param>\n" +
+                        "         <value class=\"nl.nl2312.xmlrpc.types.Base64Value\">\n" +
+                        "            <base64>eW91IGNhbid0IHJlYWQgdGhpcyE=</base64>\n" +
+                        "         </value>\n" +
+                        "      </param>\n" +
+                        "   </params>\n" +
+                        "</methodCall>");
+    }
+
+    @Test
+    public void storeBlobs() throws IOException, InterruptedException {
+        server.enqueue(new MockResponse()
+                .addHeader("Content-Type", "application/xml; charset=UTF-8")
+                .setBody(BODY_BLOBS));
+        String message = "you can't read this!";
+
+        TestService service = retrofit.create(TestService.class);
+        List<Blob> storedBlobs = service.storeBlobs(new Blob(message.getBytes())).execute().body();
+        assertThat(storedBlobs).isNotEmpty();
+        assertThat(storedBlobs.size()).isEqualTo(2);
+        assertThat(storedBlobs.get(0)).isNotNull();
+        assertThat(new String(storedBlobs.get(0).blob)).isEqualTo("you can't read this!");
+        assertThat(storedBlobs.get(1)).isNotNull();
+        assertThat(new String(storedBlobs.get(1).blob)).isEqualTo("you can't read this!");
+        server.takeRequest();
+    }
+
     interface TestService {
 
         @XmlRpc("system.listMethods")
@@ -262,6 +315,14 @@ public final class MockedTest {
         @XmlRpc("posts")
         @POST("/mocked")
         Call<PostWithConstructor[]> postsWithConstructor(@Body Nothing nothing);
+
+        @XmlRpc("storeBlob")
+        @POST("/mocked")
+        Call<byte[]> storeBlob(@Body byte[] input);
+
+        @XmlRpc("storeBlobs")
+        @POST("/mocked")
+        Call<List<Blob>> storeBlobs(@Body Blob input);
 
     }
 
@@ -339,6 +400,19 @@ public final class MockedTest {
             this.id = id;
             this.name = name;
             this.published = published;
+        }
+
+    }
+
+    public static class Blob {
+
+        public byte[] blob;
+
+        public Blob() {
+        }
+
+        public Blob(byte[] blob) {
+            this.blob = blob;
         }
 
     }
@@ -441,6 +515,34 @@ public final class MockedTest {
             "                                 <value><string>xmlrpc</string></value>\n" +
             "                                 <value><dateTime.iso8601>2017-01-23T15:18:09+00:00</dateTime" +
             ".iso8601></value>\n" +
+            "                             </data>\n" +
+            "                         </array>\n" +
+            "                     </value>\n" +
+            "                 </data>\n" +
+            "             </array>\n" +
+            "          </value>\n" +
+            "       </param>\n" +
+            "   </params>\n" +
+            "</methodResponse>";
+
+    private static final String BODY_BLOBS = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
+            "<methodResponse>\n" +
+            "   <params>\n" +
+            "       <param>\n" +
+            "          <value>\n" +
+            "             <array>\n" +
+            "                 <data>\n" +
+            "                     <value>\n" +
+            "                         <array>\n" +
+            "                             <data>\n" +
+            "                                 <value><base64>eW91IGNhbid0IHJlYWQgdGhpcyE=</base64></value>\n" +
+            "                             </data>\n" +
+            "                         </array>\n" +
+            "                     </value>\n" +
+            "                     <value>\n" +
+            "                         <array>\n" +
+            "                             <data>\n" +
+            "                                 <value><base64>eW91IGNhbid0IHJlYWQgdGhpcyE=</base64></value>\n" +
             "                             </data>\n" +
             "                         </array>\n" +
             "                     </value>\n" +

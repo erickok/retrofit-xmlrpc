@@ -21,37 +21,39 @@ final class MethodCall {
     @ElementList
     List<Param> params;
 
-    public static MethodCall create(String method, Object params) {
+    public static MethodCall create(String method, Object param) {
         MethodCall methodCall = new MethodCall();
         methodCall.methodName = method;
 
-        if (params.getClass().isArray()) {
-            // Treat params as array of individual parameters
-            int length = Array.getLength(params);
+        if (param.getClass() == byte[].class) {
+            methodCall.params = Collections.singletonList(Param.from(param));
+        } else if (param.getClass().isArray()) {
+            // Treat param as array of individual parameters
+            int length = Array.getLength(param);
             methodCall.params = new ArrayList<>(length);
             for (int i = 0; i < length; i++) {
-                methodCall.params.add(Param.from(Array.get(params, i)));
+                methodCall.params.add(Param.from(Array.get(param, i)));
             }
-        } else if (params instanceof Iterable) {
-            // Treat params as collection of individual parameters
-            Iterator iter = ((Iterable) params).iterator();
+        } else if (param instanceof Iterable) {
+            // Treat param as collection of individual parameters
+            Iterator iter = ((Iterable) param).iterator();
             methodCall.params = new ArrayList<>();
             while (iter.hasNext()) {
                 methodCall.params.add(Param.from(iter.next()));
             }
-        } else if (params instanceof Boolean || params instanceof Integer || params instanceof Long || params
-                instanceof Double || params instanceof String) {
-            methodCall.params = Collections.singletonList(Param.from(params));
+        } else if (param instanceof Boolean || param instanceof Integer || param instanceof Long || param
+                instanceof Double || param instanceof String) {
+            methodCall.params = Collections.singletonList(Param.from(param));
         } else {
-            // Treat params a an input object of which the fields represent the parameters
-            Field[] fields = params.getClass().getDeclaredFields();
+            // Treat param a an input object of which the fields represent the parameters
+            Field[] fields = param.getClass().getDeclaredFields();
             methodCall.params = new ArrayList<>(fields.length);
             for (Field field : fields) {
                 if (Modifier.isStatic(field.getModifiers()) || Modifier.isTransient(field.getModifiers())) {
                     continue;
                 }
                 try {
-                    methodCall.params.add(Param.from(field.get(params)));
+                    methodCall.params.add(Param.from(field.get(param)));
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(field.getName() + " could not be accessed to read XML-RPC param");
                 }

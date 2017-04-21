@@ -42,6 +42,8 @@ public final class ValueConverter implements Converter<Value> {
                 return StringValue.parse(node.getValue());
             case DateValue.CODE:
                 return DateValue.parse(node.getValue());
+            case Base64Value.CODE:
+                return Base64Value.parse(node.getValue());
             case ArrayValue.CODE:
                 ArrayList<Value> data = new ArrayList<>();
                 InputNode dataNode = node.getNext().getNext();
@@ -66,7 +68,9 @@ public final class ValueConverter implements Converter<Value> {
 
     static Value getValue(Object value) {
         // TODO? Handle null as <nil />?
-        if (value.getClass().isArray()) {
+        if (value.getClass() == byte[].class) {
+            return new Base64Value((byte[]) value);
+        } else if (value.getClass().isArray()) {
             int length = Array.getLength(value);
             List<Value> values = new ArrayList<>(length);
             for (int i = 0; i < length; i++) {

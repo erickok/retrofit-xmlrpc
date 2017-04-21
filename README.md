@@ -33,7 +33,8 @@ Direct conversion is supported (as request parameters in a `<methodCall>` and as
 - `<double>` --> `Double`
 - `<string>` --> `String`
 - `<dateTime.iso8601>` --> `Date`
-Support for `<base64>` is not yet added.
+- `<base64>` --> `byte[]`
+Support for `<nil />` is not yet added.
 
 ### Structs
 A `<struct>` response param or `<struct>`s as part of an array will be read into your target POJO. The `<member>` names are mapped against the POJO fields (which need to be accessible and writable).
