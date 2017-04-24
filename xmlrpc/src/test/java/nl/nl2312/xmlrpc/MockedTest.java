@@ -12,6 +12,7 @@ import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.Before;
 import org.junit.Test;
 import retrofit2.Call;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
@@ -90,7 +91,7 @@ public final class MockedTest {
                         "</methodResponse>"));
 
         TestService service = retrofit.create(TestService.class);
-        String[] execute = service.listMethods().execute().body();
+        String[] execute = service.listMethods(NOTHING).execute().body();
         server.takeRequest();
         assertThat(execute).isNotEmpty();
     }
@@ -282,11 +283,42 @@ public final class MockedTest {
         server.takeRequest();
     }
 
+    @Test(expected = IOException.class)
+    public void fault() throws IOException, InterruptedException {
+        server.enqueue(new MockResponse()
+                .addHeader("Content-Type", "application/xml; charset=UTF-8")
+                .setBody("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                        "<methodResponse>\n" +
+                        "    <fault>\n" +
+                        "        <value>\n" +
+                        "            <struct>\n" +
+                        "                <member>\n" +
+                        "                    <name>faultCode</name>\n" +
+                        "                    <value>\n" +
+                        "                        <i4>-503</i4>\n" +
+                        "                    </value>\n" +
+                        "                </member>\n" +
+                        "                <member>\n" +
+                        "                    <name>faultString</name>\n" +
+                        "                    <value>\n" +
+                        "                        <string>Wrong object type.</string>\n" +
+                        "                    </value>\n" +
+                        "                </member>\n" +
+                        "            </struct>\n" +
+                        "        </value>\n" +
+                        "    </fault>\n" +
+                        "</methodResponse>"));
+        
+        TestService service = retrofit.create(TestService.class);
+        service.listMethods(NOTHING).execute();
+        server.takeRequest();
+    }
+
     interface TestService {
 
         @XmlRpc("system.listMethods")
         @POST("/mocked")
-        Call<String[]> listMethods();
+        Call<String[]> listMethods(@Body Nothing nothing);
 
         @XmlRpc("multiply")
         @POST("/mocked")
