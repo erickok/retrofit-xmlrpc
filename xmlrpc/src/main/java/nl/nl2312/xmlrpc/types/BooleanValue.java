@@ -31,7 +31,7 @@ public final class BooleanValue implements Value {
     }
 
     @Override
-    public Object asObject(DeserializationContext context, Class<?> type, Class<?> param) throws IllegalAccessException, InstantiationException {
+    public Object asObject(DeserializationContext context, Class<?> type, Class<?> param) {
         return value;
     }
 

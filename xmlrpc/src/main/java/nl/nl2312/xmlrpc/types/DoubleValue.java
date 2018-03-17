@@ -29,7 +29,7 @@ public final class DoubleValue implements Value {
     }
 
     @Override
-    public Object asObject(DeserializationContext context, Class<?> type, Class<?> param) throws IllegalAccessException, InstantiationException {
+    public Object asObject(DeserializationContext context, Class<?> type, Class<?> param) {
         return value;
     }
 

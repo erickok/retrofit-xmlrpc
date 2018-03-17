@@ -1,11 +1,7 @@
-plugins {
-    id "com.jfrog.bintray" version "1.7"
-}
-
 apply plugin: 'java'
 
 group = 'nl.2312'
-version = '0.1'
+version = '1.0'
 
 sourceCompatibility = 1.7
 
@@ -14,39 +10,17 @@ repositories {
 }
 
 dependencies {
-    compile 'com.squareup.retrofit2:retrofit:2.2.0'
+    compile 'com.squareup.retrofit2:retrofit:2.4.0'
     compile 'org.simpleframework:simple-xml:2.7.1'
     compile 'net.iharder:base64:2.3.9'
 
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.6.0'
-    testCompile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.10.0'
+    testCompile 'com.squareup.okhttp3:logging-interceptor:3.10.0'
     testCompile 'junit:junit:4.12'
-    testCompile 'com.google.truth:truth:0.32'
+    testCompile 'com.google.truth:truth:0.39'
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
-}
-
-Properties properties = new Properties()
-File propFile = '/Users/erickok/.gradle/bintray.properties' as File
-try {
-    properties.load(propFile.newDataInputStream())
-} catch (Exception e) {
-}
-
-bintray {
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
-    configurations = ['archives']
-    pkg {
-        repo = 'retrofit-xmlrpc'
-        name = 'retrofit-xmlrpc'
-        licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/erickok/retrofit-xmlrpc.git'
-        version {
-            name = '0.1'
-        }
-    }
 }

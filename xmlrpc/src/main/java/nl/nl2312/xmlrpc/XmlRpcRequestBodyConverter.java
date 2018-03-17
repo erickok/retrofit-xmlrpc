@@ -23,7 +23,7 @@ final class XmlRpcRequestBodyConverter<T> implements Converter<T, RequestBody> {
     }
 
     @Override
-    public RequestBody convert(T value) throws IOException {
+    public RequestBody convert(T value) {
         MethodCall methodCall = MethodCall.create(method, value);
         Buffer buffer = new Buffer();
         try {
