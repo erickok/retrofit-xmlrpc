@@ -12,7 +12,6 @@ import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.Before;
 import org.junit.Test;
 import retrofit2.Call;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
@@ -170,6 +169,39 @@ public final class MockedTest {
         assertThat(execute.mother.name).isEqualTo("Mom");
         assertThat(execute.siblings.get(0).name).isEqualTo("Sis");
         assertThat(execute.siblings.get(1).name).isEqualTo("Bro");
+    }
+
+    @Test
+    public void listOfArrays() throws IOException, InterruptedException {
+        server.enqueue(new MockResponse()
+                .addHeader("Content-Type", "application/xml; charset=UTF-8")
+                .setBody("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                        "<methodResponse>" +
+                        "  <params>" +
+                        "    <param>" +
+                        "      <value>" +
+                        "        <array>" +
+                        "          <data>" +
+                        "            <value>" +
+                        "              <array>" +
+                        "                <data>" +
+                        "                  <value><string>I am String #1</string></value>" +
+                        "                  <value><string>I am String #2</string></value>" +
+                        "                </data>" +
+                        "              </array>" +
+                        "            </value>" +
+                        "          </data>" +
+                        "        </array>" +
+                        "      </value>" +
+                        "    </param>" +
+                        "  </params>" +
+                        "</methodResponse>"));
+
+        TestService service = retrofit.create(TestService.class);
+        List<String[]> execute = service.listOfArrays(NOTHING).execute().body();
+        server.takeRequest();
+        assertThat(execute).isNotNull();
+        assertThat(execute.get(0)[0]).isEqualTo("I am String #1");
     }
 
     @Test
@@ -335,6 +367,10 @@ public final class MockedTest {
         @XmlRpc("family")
         @POST("/mocked")
         Call<PersonWithConstructor> familyWithConstructor(@Body Nothing nothing);
+
+        @XmlRpc("listOfArrays")
+        @POST("/mocked")
+        Call<List<String[]>> listOfArrays(@Body Nothing nothing);
 
         @XmlRpc("addChildren")
         @POST("/mocked")
