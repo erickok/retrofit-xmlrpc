@@ -12,7 +12,7 @@ Typed XML-RPC support for Retrofit
     }
     
     dependencies {
-            compile 'com.github.erickok:retrofit-xmlrpc:v1.0'
+            compile 'com.github.erickok:retrofit-xmlrpc:v1.1'
     }
 
 ```
