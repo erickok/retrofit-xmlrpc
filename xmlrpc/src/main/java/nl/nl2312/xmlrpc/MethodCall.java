@@ -1,5 +1,7 @@
 package nl.nl2312.xmlrpc;
 
+import nl.nl2312.xmlrpc.types.Member;
+import nl.nl2312.xmlrpc.types.StructValue;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
@@ -7,10 +9,7 @@ import org.simpleframework.xml.Root;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @Root(name = "methodCall")
 final class MethodCall {
@@ -41,6 +40,16 @@ final class MethodCall {
             while (iter.hasNext()) {
                 methodCall.params.add(Param.from(iter.next()));
             }
+        } else if (param instanceof Map) {
+            // Treat param as struct with map entries as members
+            ArrayList<Member> members = new ArrayList<>();
+            //noinspection unchecked Map entrySet is always a Set<Map.Entry>, we just don't know the Map.Entry type
+            for (Map.Entry entry : ((Set<Map.Entry>) ((Map) param).entrySet())) {
+                members.add(Member.create(entry.getKey().toString(), ValueConverter.getValue(entry.getValue())));
+            }
+            Param mapAsStruct = new Param();
+            mapAsStruct.value = new StructValue(members);
+            methodCall.params = Collections.singletonList(mapAsStruct);
         } else if (param instanceof Boolean || param instanceof Integer || param instanceof Long || param
                 instanceof Double || param instanceof String) {
             methodCall.params = Collections.singletonList(Param.from(param));

@@ -17,9 +17,7 @@ import retrofit2.http.Body;
 import retrofit2.http.POST;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static com.google.common.truth.Truth.assertThat;
 import static nl.nl2312.xmlrpc.Nothing.NOTHING;
@@ -315,6 +313,46 @@ public final class MockedTest {
         server.takeRequest();
     }
 
+    @Test
+    public void mapOfObjects() throws IOException, InterruptedException {
+        server.enqueue(new MockResponse()
+                .addHeader("Content-Type", "application/xml; charset=UTF-8")
+                .setBody("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
+                        "<methodResponse>\n" +
+                        "   <params>\n" +
+                        "      <param>\n" +
+                        "        <value>\n" +
+                        "            <struct>\n" +
+                        "                <member>\n" +
+                        "                    <name>successCode</name>\n" +
+                        "                    <value>\n" +
+                        "                        <i4>204</i4>\n" +
+                        "                    </value>\n" +
+                        "                </member>\n" +
+                        "                <member>\n" +
+                        "                    <name>content</name>\n" +
+                        "                    <value>\n" +
+                        "                        <string>No content</string>\n" +
+                        "                    </value>\n" +
+                        "                </member>\n" +
+                        "            </struct>\n" +
+                        "        </value>\n" +
+                        "      </param>\n" +
+                        "   </params>\n" +
+                        "</methodResponse>"));
+
+        TestService service = retrofit.create(TestService.class);
+        Map<String, Object> input = new HashMap<>();
+        input.put("one", 1);
+        input.put("two", "two");
+        Map<String, Object> execute = service.mapOfObjects(input).execute().body();
+        server.takeRequest();
+        assertThat(execute).isNotNull();
+        assertThat(execute.size()).isEqualTo(2);
+        assertThat(execute.get("successCode")).isEqualTo(204);
+        assertThat(execute.get("content")).isEqualTo("No content");
+    }
+
     @Test(expected = IOException.class)
     public void fault() throws IOException, InterruptedException {
         server.enqueue(new MockResponse()
@@ -391,6 +429,10 @@ public final class MockedTest {
         @XmlRpc("storeBlobs")
         @POST("/mocked")
         Call<List<Blob>> storeBlobs(@Body Blob input);
+
+        @XmlRpc("mapOfObjects")
+        @POST("/mocked")
+        Call<Map<String, Object>> mapOfObjects(@Body Map<String, Object> input);
 
     }
 

@@ -10,7 +10,9 @@ import org.simpleframework.xml.stream.OutputNode;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static nl.nl2312.xmlrpc.types.StructValue.CODE;
 
@@ -46,6 +48,14 @@ public final class StructValue implements Value {
         if (context.hasStructDeserializer(type)) {
             // Deserialize using custom deserializer
             return context.structDeserializer(type).deserialize(new StructMembers(context, members));
+        }
+
+        if (Map.class.isAssignableFrom(type)) {
+            Map t = new HashMap();
+            for (Member member : members) {
+                t.put(member.name, member.value.asObject(context, param, null));
+            }
+            return t;
         }
 
         // Deserialize using member to field mapping

@@ -65,7 +65,7 @@ A `<struct>` response param or `<struct>`s as part of an array will be read into
     </member>
 </struct>
 ```
-If it is desired or needed (due to reseved names) to map member `<name>`s to different fields, use the `@MemberName` annotation.
+If it is desired or needed (due to reserved names) to map member `<name>`s to different fields, use the `@MemberName` annotation.
 ```java
 public class File {
     @MemberName("file_nr") String fileNr; // --> "DF101364"
@@ -73,6 +73,7 @@ public class File {
 }
 
 ```
+Alternatively a `<struct>` will happily be mapped to a `Map<String, Object>` or `Map<String, ...>`. Conversely, a `Map` as request type is written as `<struct>` with key/value pairs.
 
 ### Arrays
 An `<array>` response param can be converted into three distinct targets.
