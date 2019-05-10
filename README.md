@@ -12,7 +12,7 @@ Typed XML-RPC support for Retrofit
     }
     
     dependencies {
-            compile 'com.github.erickok:retrofit-xmlrpc:v1.1'
+            compile 'com.github.erickok:retrofit-xmlrpc:v1.2'
     }
 
 ```
@@ -245,7 +245,7 @@ The xml response is first parsed via [Simple](http://simple.sourceforge.net/) in
 ## License and credits
 Designed and developed by [Eric Kok](mailto:eric@2312.nl) of [2312 development](http://2312.nl). Inspired by the [retrofit-jsonrpc](https://github.com/segmentio/retrofit-jsonrpc) project. Includes `Iso8601Utils` and `Iso8601DateFormat` classes from the [Jackson Databind](https://github.com/FasterXML/jackson-databind) project under Apache License 2.0.
 
-    Copyright 2017-2018 Eric Kok
+    Copyright 2017-2019 Eric Kok
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
