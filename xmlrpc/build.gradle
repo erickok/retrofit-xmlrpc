@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 group = 'nl.2312'
-version = '1.1'
+version = '1.2'
 
 sourceCompatibility = 1.7
 
