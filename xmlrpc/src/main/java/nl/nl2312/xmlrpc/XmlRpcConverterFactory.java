@@ -2,12 +2,14 @@ package nl.nl2312.xmlrpc;
 
 import nl.nl2312.xmlrpc.deserialization.ArrayDeserializer;
 import nl.nl2312.xmlrpc.deserialization.DeserializationContext;
+import nl.nl2312.xmlrpc.deserialization.SimplefiedTreeStrategy;
 import nl.nl2312.xmlrpc.deserialization.StructDeserializer;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.convert.AnnotationStrategy;
 import org.simpleframework.xml.core.Persister;
+import org.simpleframework.xml.strategy.TreeStrategy;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
 
@@ -67,7 +69,9 @@ public final class XmlRpcConverterFactory extends Converter.Factory {
         private DeserializationContext context = new DeserializationContext();
 
         public Converter.Factory create() {
-            return new XmlRpcConverterFactory(new Persister(new AnnotationStrategy()), context);
+            // Use annotations, if any, or write using a tree, but never write any extra 'class' or 'length' attributes
+            AnnotationStrategy strategy = new AnnotationStrategy(new SimplefiedTreeStrategy());
+            return new XmlRpcConverterFactory(new Persister(strategy), context);
         }
 
         public <T> Builder addStructDeserializer(Class<T> clazz, StructDeserializer<T> structDeserializer) {

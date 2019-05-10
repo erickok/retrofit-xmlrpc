@@ -285,9 +285,9 @@ public final class MockedTest {
         assertThat(request.getBody().readUtf8()).isEqualTo(
                 "<methodCall>\n" +
                         "   <methodName>storeBlob</methodName>\n" +
-                        "   <params class=\"java.util.Collections$SingletonList\">\n" +
+                        "   <params>\n" +
                         "      <param>\n" +
-                        "         <value class=\"nl.nl2312.xmlrpc.types.Base64Value\">\n" +
+                        "         <value>\n" +
                         "            <base64>eW91IGNhbid0IHJlYWQgdGhpcyE=</base64>\n" +
                         "         </value>\n" +
                         "      </param>\n" +
