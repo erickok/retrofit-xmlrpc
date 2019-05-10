@@ -10,12 +10,12 @@ repositories {
 }
 
 dependencies {
-    compile 'com.squareup.retrofit2:retrofit:2.4.0'
+    compile 'com.squareup.retrofit2:retrofit:2.5.0'
     compile 'org.simpleframework:simple-xml:2.7.1'
     compile 'net.iharder:base64:2.3.9'
 
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.11.0'
-    testCompile 'com.squareup.okhttp3:logging-interceptor:3.11.0'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.12.0'
+    testCompile 'com.squareup.okhttp3:logging-interceptor:3.12.0'
     testCompile 'junit:junit:4.12'
     testCompile 'com.google.truth:truth:0.42'
 }
