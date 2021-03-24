@@ -88,6 +88,8 @@ public final class ArrayValue implements Value {
                     Array.set(values, i, data.get(i).asObject(context, componentType, null));
                 }
                 return values;
+            } else if (data.isEmpty()) {
+                return Array.newInstance(componentType, 0);
             } else {
                 throw new RuntimeException(componentType.getSimpleName() + "[] types are not supported by XML-RPC");
             }

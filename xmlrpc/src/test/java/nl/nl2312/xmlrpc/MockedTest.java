@@ -149,6 +149,7 @@ public final class MockedTest {
         assertThat(execute.mother.name).isEqualTo("Mom");
         assertThat(execute.siblings[0].name).isEqualTo("Sis");
         assertThat(execute.siblings[1].name).isEqualTo("Bro");
+        assertThat(execute.friends).isEmpty();
     }
 
     @Test
@@ -466,6 +467,7 @@ public final class MockedTest {
         public PersonWithConstructor mother;
         public PersonWithConstructor father;
         public PersonWithConstructor[] siblings;
+        public PersonWithConstructor[] friends;
 
         public Person() {
         }
@@ -591,6 +593,15 @@ public final class MockedTest {
             "                         </member>\n" +
             "                       </struct>\n" +
             "                     </value>\n" +
+            "                   </data>\n" +
+            "                 </array>\n" +
+            "               </value>\n" +
+            "             </member>\n" +
+            "             <member>\n" +
+            "               <name>friends</name>\n" +
+            "               <value>\n" +
+            "                 <array>\n" +
+            "                   <data>\n" +
             "                   </data>\n" +
             "                 </array>\n" +
             "               </value>\n" +
